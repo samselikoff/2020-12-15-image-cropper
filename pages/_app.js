@@ -6,6 +6,7 @@ function MyApp({ Component, pageProps }) {
     <>
       <Head>
         <title>Image Cropper</title>
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
       </Head>
       <div className="text-gray-900">
         <Component {...pageProps} />
