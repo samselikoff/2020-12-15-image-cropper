@@ -7,7 +7,7 @@ export default function Home() {
       <p className="mt-2 text-center">Image Cropper</p>
 
       <div className="p-8">
-        <ImageCropper src="http://i3.ytimg.com/vi/bNDCFBIiAe8/maxresdefault.jpg" />
+        <ImageCropper src="/thumb.jpg" />
       </div>
     </>
   );
