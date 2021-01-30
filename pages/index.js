@@ -22,8 +22,34 @@ function ImageCropper({ src }) {
       onDrag: ({ movement: [dx, dy] }) => {
         setCrop((crop) => ({ ...crop, x: dx, y: dy }));
       },
-      onPinch: ({ offset: [d] }) => {
-        setCrop((crop) => ({ ...crop, scale: 1 + d / 50 }));
+
+      onPinch: ({
+        memo,
+        origin: [pinchOriginX, pinchOriginY],
+        offset: [d],
+      }) => {
+        memo ??= {
+          bounds: imageRef.current.getBoundingClientRect(),
+          crop,
+        };
+
+        let transformOriginX = memo.bounds.x + memo.bounds.width / 2;
+        let transformOriginY = memo.bounds.y + memo.bounds.height / 2;
+
+        let displacementX = (transformOriginX - pinchOriginX) / memo.crop.scale;
+        let displacementY = (transformOriginY - pinchOriginY) / memo.crop.scale;
+
+        let initialOffsetDistance = (memo.crop.scale - 1) * 50;
+        let movementDistance = d - initialOffsetDistance;
+
+        setCrop((crop) => ({
+          ...crop,
+          scale: 1 + d / 50,
+          x: memo.crop.x + (displacementX * movementDistance) / 50,
+          y: memo.crop.y + (displacementY * movementDistance) / 50,
+        }));
+
+        return memo;
       },
 
       onDragEnd: maybeAdjustImage,
