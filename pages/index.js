@@ -1,26 +1,40 @@
 import { useRef, useState } from "react";
 import { useGesture } from "react-use-gesture";
+import { animate, motion, useMotionValue } from "framer-motion";
 
 export default function Home() {
+  let [crop, setCrop] = useState({ x: 0, y: 0, scale: 1 });
+
   return (
     <>
       <p className="mt-2 text-center">Image Cropper</p>
 
       <div className="p-8">
-        <ImageCropper src="/thumb.jpg" />
+        <ImageCropper src="/thumb.jpg" crop={crop} onCropChange={setCrop} />
+
+        <div className="mt-2">
+          <p>Crop X: {Math.round(crop.x)}</p>
+          <p>Crop Y: {Math.round(crop.y)}</p>
+          <p>Crop Scale: {crop.scale}</p>
+        </div>
       </div>
     </>
   );
 }
 
-function ImageCropper({ src }) {
-  let [crop, setCrop] = useState({ x: 0, y: 0, scale: 1 });
+function ImageCropper({ src, crop, onCropChange }) {
+  let x = useMotionValue(crop.x);
+  let y = useMotionValue(crop.y);
+  let scale = useMotionValue(crop.scale);
   let imageRef = useRef();
   let imageContainerRef = useRef();
+  let animations = [];
   useGesture(
     {
       onDrag: ({ movement: [dx, dy] }) => {
-        setCrop((crop) => ({ ...crop, x: dx, y: dy }));
+        animations.forEach((a) => a.stop());
+        x.set(dx);
+        y.set(dy);
       },
 
       onPinch: ({
@@ -28,9 +42,10 @@ function ImageCropper({ src }) {
         origin: [pinchOriginX, pinchOriginY],
         offset: [d],
       }) => {
+        animations.forEach((a) => a.stop());
         memo ??= {
           bounds: imageRef.current.getBoundingClientRect(),
-          crop,
+          crop: { x: x.get(), y: y.get(), scale: scale.get() },
         };
 
         let transformOriginX = memo.bounds.x + memo.bounds.width / 2;
@@ -42,12 +57,9 @@ function ImageCropper({ src }) {
         let initialOffsetDistance = (memo.crop.scale - 1) * 50;
         let movementDistance = d - initialOffsetDistance;
 
-        setCrop((crop) => ({
-          ...crop,
-          scale: 1 + d / 50,
-          x: memo.crop.x + (displacementX * movementDistance) / 50,
-          y: memo.crop.y + (displacementY * movementDistance) / 50,
-        }));
+        scale.set(1 + d / 50);
+        x.set(memo.crop.x + (displacementX * movementDistance) / 50);
+        y.set(memo.crop.y + (displacementY * movementDistance) / 50);
 
         return memo;
       },
@@ -57,7 +69,7 @@ function ImageCropper({ src }) {
     },
     {
       drag: {
-        initial: () => [crop.x, crop.y],
+        initial: () => [x.get(), y.get()],
       },
       pinch: {
         distanceBounds: { min: 0 },
@@ -68,7 +80,7 @@ function ImageCropper({ src }) {
   );
 
   function maybeAdjustImage() {
-    let newCrop = crop;
+    let newCrop = { x: x.get(), y: y.get(), scale: scale.get() };
     let imageBounds = imageRef.current.getBoundingClientRect();
     let containerBounds = imageContainerRef.current.getBoundingClientRect();
     let originalWidth = imageRef.current.clientWidth;
@@ -89,30 +101,29 @@ function ImageCropper({ src }) {
         -(imageBounds.height - containerBounds.height) + heightOverhang;
     }
 
-    setCrop(newCrop);
+    animations = [
+      animate(x, newCrop.x, { type: "tween", ease: [0.15, 1, 0.3, 1] }),
+      animate(y, newCrop.y, { type: "tween", ease: [0.15, 1, 0.3, 1] }),
+    ];
+    onCropChange(newCrop);
   }
 
   return (
     <>
       <div className="overflow-hidden ring-4 ring-blue-500 aspect-w-3 aspect-h-4">
         <div ref={imageContainerRef}>
-          <img
+          <motion.img
             src={src}
             ref={imageRef}
             style={{
-              left: crop.x,
-              top: crop.y,
-              transform: `scale(${crop.scale})`,
+              x: x,
+              y: y,
+              scale: scale,
               touchAction: "none",
             }}
             className="relative w-auto h-full max-w-none max-h-none"
           />
         </div>
-      </div>
-      <div className="mt-2">
-        <p>Crop X: {Math.round(crop.x)}</p>
-        <p>Crop Y: {Math.round(crop.y)}</p>
-        <p>Crop Scale: {crop.scale}</p>
       </div>
     </>
   );
