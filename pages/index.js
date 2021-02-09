@@ -28,12 +28,11 @@ function ImageCropper({ src, crop, onCropChange }) {
 
   let imageRef = useRef();
   let imageContainerRef = useRef();
-  let animations = useRef([]);
   useGesture(
     {
       onDrag: ({ movement: [dx, dy] }) => {
-        animations.current.forEach((a) => a.stop());
-
+        x.stop();
+        y.stop();
         x.set(dx);
         y.set(dy);
       },
@@ -43,8 +42,8 @@ function ImageCropper({ src, crop, onCropChange }) {
         origin: [pinchOriginX, pinchOriginY],
         offset: [d],
       }) => {
-        animations.current.forEach((a) => a.stop());
-
+        x.stop();
+        y.stop();
         memo ??= {
           bounds: imageRef.current.getBoundingClientRect(),
           crop: { x: x.get(), y: y.get(), scale: scale.get() },
@@ -103,7 +102,16 @@ function ImageCropper({ src, crop, onCropChange }) {
         -(imageBounds.height - containerBounds.height) + heightOverhang;
     }
 
-    animations.current = [animate(x, newCrop.x), animate(y, newCrop.y)];
+    animate(x, newCrop.x, {
+      duration: 0.4,
+      type: "tween",
+      ease: [0.15, 1, 0.3, 1],
+    });
+    animate(y, newCrop.y, {
+      duration: 0.4,
+      type: "tween",
+      ease: [0.15, 1, 0.3, 1],
+    });
     onCropChange(newCrop);
   }
 
