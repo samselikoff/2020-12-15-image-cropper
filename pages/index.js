@@ -109,7 +109,7 @@ function ImageCropper({ src, crop, onCropChange }) {
 
   return (
     <>
-      <div className="overflow-hidden ring-4 ring-blue-500 aspect-w-3 aspect-h-4">
+      <div className="overflow-hidden cursor-grab ring-4 ring-blue-500 aspect-w-3 aspect-h-4">
         <div ref={imageContainerRef}>
           <motion.img
             src={src}
@@ -119,6 +119,9 @@ function ImageCropper({ src, crop, onCropChange }) {
               y: y,
               scale: scale,
               touchAction: "none",
+              userSelect: "none",
+              MozUserSelect: "none",
+              WebkitUserDrag: "none",
             }}
             className="relative w-auto h-full max-w-none max-h-none"
           />
