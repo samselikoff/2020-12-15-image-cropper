@@ -7,14 +7,15 @@ export default function Home() {
 
   return (
     <>
-      <p className="mt-2 text-center">Image Cropper</p>
+      <p className="mt-2 text-lg text-center">Image Cropper</p>
 
-      <div className="p-8">
+      <div className="p-8 mt-2">
         <ImageCropper src="/thumb.jpg" crop={crop} onCropChange={setCrop} />
-        <div className="mt-2">
+
+        <div className="mt-6">
           <p>Crop X: {Math.round(crop.x)}</p>
           <p>Crop Y: {Math.round(crop.y)}</p>
-          <p>Crop Scale: {crop.scale}</p>
+          <p>Crop Scale: {Math.round(crop.scale * 100) / 100}</p>
         </div>
       </div>
     </>
@@ -39,10 +40,12 @@ function ImageCropper({ src, crop, onCropChange }) {
       },
 
       onPinch: ({
+        event,
         memo,
         origin: [pinchOriginX, pinchOriginY],
         offset: [d],
       }) => {
+        event.preventDefault();
         animations.current.forEach((a) => a.stop());
 
         memo ??= {
@@ -56,12 +59,12 @@ function ImageCropper({ src, crop, onCropChange }) {
         let displacementX = (transformOriginX - pinchOriginX) / memo.crop.scale;
         let displacementY = (transformOriginY - pinchOriginY) / memo.crop.scale;
 
-        let initialOffsetDistance = (memo.crop.scale - 1) * 50;
+        let initialOffsetDistance = (memo.crop.scale - 1) * 200;
         let movementDistance = d - initialOffsetDistance;
 
-        scale.set(1 + d / 50);
-        x.set(memo.crop.x + (displacementX * movementDistance) / 50);
-        y.set(memo.crop.y + (displacementY * movementDistance) / 50);
+        scale.set(1 + d / 200);
+        x.set(memo.crop.x + (displacementX * movementDistance) / 200);
+        y.set(memo.crop.y + (displacementY * movementDistance) / 200);
 
         return memo;
       },
@@ -109,7 +112,9 @@ function ImageCropper({ src, crop, onCropChange }) {
 
   return (
     <>
-      <div className="overflow-hidden ring-4 ring-blue-500 aspect-w-3 aspect-h-4">
+      <div
+        className={`relative overflow-hidden bg-black ring-4 cursor-grab ring-white aspect-w-4 aspect-h-5`}
+      >
         <div ref={imageContainerRef}>
           <motion.img
             src={src}
@@ -119,6 +124,9 @@ function ImageCropper({ src, crop, onCropChange }) {
               y: y,
               scale: scale,
               touchAction: "none",
+              userSelect: "none",
+              MozUserSelect: "none",
+              WebkitUserDrag: "none",
             }}
             className="relative w-auto h-full max-w-none max-h-none"
           />
