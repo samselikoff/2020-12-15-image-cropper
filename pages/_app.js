@@ -8,8 +8,8 @@ function MyApp({ Component, pageProps }) {
         <title>Image Cropper</title>
         <meta name="viewport" content="width=device-width, user-scalable=no" />
       </Head>
-      <div className="min-h-screen ">
-        <div className="max-w-sm p-4 mx-auto text-gray-900 bg-white">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black">
+        <div className="max-w-sm p-4 mx-auto text-gray-200">
           <Component {...pageProps} />
         </div>
       </div>
